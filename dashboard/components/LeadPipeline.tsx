@@ -89,7 +89,7 @@ export default function LeadPipeline({ initialLeads }: Props) {
   return (
     <div className="min-h-screen bg-page">
       {/* Header */}
-      <header className="border-b border-border px-8 py-4 flex items-center justify-between gap-6">
+      <header className="border-b border-border px-4 sm:px-8 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-0.5">Atmax Green Planet</p>
           <h2 className="text-xl font-semibold tracking-tight text-text-primary">Pipeline</h2>
@@ -98,14 +98,14 @@ export default function LeadPipeline({ initialLeads }: Props) {
             {urgent.length > 0 && <span className="text-[#ef4444] font-medium"> · {urgent.length} need attention</span>}
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="relative">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[140px]">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search leads"
-              className="bg-input border border-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary w-44 focus:outline-none focus:border-text-primary/30"
+              className="bg-input border border-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary w-full lg:w-44 focus:outline-none focus:border-text-primary/30"
             />
           </div>
           <div className="flex items-center gap-1 bg-input border border-border rounded-full p-0.5">
@@ -145,7 +145,7 @@ export default function LeadPipeline({ initialLeads }: Props) {
       {showAddLead && <AddLeadModal onClose={() => setShowAddLead(false)} />}
 
       {/* Pipeline */}
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <StatsBar leads={allLeads} />
 
         {/* Urgent Banner */}

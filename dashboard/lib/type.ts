@@ -17,6 +17,8 @@ export interface Lead {
   urgent: boolean
   handed_off: boolean
   notes: string | null
+  input_tokens: number | null
+  output_tokens: number | null
   created_at: string
   updated_at: string | null
 }

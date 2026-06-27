@@ -43,8 +43,10 @@ export default function LeadCard({ lead }: Props) {
 
   return (
     <div
+      draggable
+      onDragStart={e => e.dataTransfer.setData('text/plain', lead.id)}
       onClick={() => router.push(`/leads/${lead.id}`)}
-      className="card-hover bg-input border border-border rounded-xl p-4 cursor-pointer hover:border-text-primary/25 hover:bg-surface"
+      className="card-hover bg-input border border-border rounded-xl p-4 cursor-pointer active:cursor-grabbing hover:border-text-primary/25 hover:bg-surface"
     >
       {/* Name and score */}
       <div className="flex items-center justify-between mb-2">

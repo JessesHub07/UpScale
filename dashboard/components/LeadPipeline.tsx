@@ -66,6 +66,11 @@ export default function LeadPipeline({ initialLeads }: Props) {
   const closedWon = leads.filter(l => l.stage === 'closed_won')
   const closedLost = leads.filter(l => l.stage === 'closed_lost')
 
+  async function updateStage(leadId: string, newStage: string) {
+    setAllLeads(prev => prev.map(l => (l.id === leadId ? { ...l, stage: newStage } : l)))
+    await supabase.from('leads').update({ stage: newStage }).eq('id', leadId)
+  }
+
   function exportCsv() {
     const columns: (keyof Lead)[] = ['name', 'phone', 'email', 'score', 'stage', 'property_type', 'location', 'budget', 'timeline', 'source', 'created_at']
     const header = columns.join(',')
@@ -177,10 +182,10 @@ export default function LeadPipeline({ initialLeads }: Props) {
                 AI Qualification — automatic
               </p>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <PipelineColumn title={STAGE_LABELS.new} count={newLeads.length} leads={newLeads} color={STAGE_COLORS.new} />
-                <PipelineColumn title={STAGE_LABELS.hot} count={hot.length} leads={hot} color={STAGE_COLORS.hot} />
-                <PipelineColumn title={STAGE_LABELS.warm} count={warm.length} leads={warm} color={STAGE_COLORS.warm} />
-                <PipelineColumn title={STAGE_LABELS.cold} count={cold.length} leads={cold} color={STAGE_COLORS.cold} />
+                <PipelineColumn stage="new" title={STAGE_LABELS.new} count={newLeads.length} leads={newLeads} color={STAGE_COLORS.new} onDropLead={updateStage} />
+                <PipelineColumn stage="hot" title={STAGE_LABELS.hot} count={hot.length} leads={hot} color={STAGE_COLORS.hot} onDropLead={updateStage} />
+                <PipelineColumn stage="warm" title={STAGE_LABELS.warm} count={warm.length} leads={warm} color={STAGE_COLORS.warm} onDropLead={updateStage} />
+                <PipelineColumn stage="cold" title={STAGE_LABELS.cold} count={cold.length} leads={cold} color={STAGE_COLORS.cold} onDropLead={updateStage} />
               </div>
             </div>
 
@@ -189,10 +194,10 @@ export default function LeadPipeline({ initialLeads }: Props) {
                 Sales Pipeline — manual
               </p>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <PipelineColumn title={STAGE_LABELS.nurture} count={nurture.length} leads={nurture} color={STAGE_COLORS.nurture} />
-                <PipelineColumn title={STAGE_LABELS.handed_off} count={handedOff.length} leads={handedOff} color={STAGE_COLORS.handed_off} />
-                <PipelineColumn title={STAGE_LABELS.closed_won} count={closedWon.length} leads={closedWon} color={STAGE_COLORS.closed_won} />
-                <PipelineColumn title={STAGE_LABELS.closed_lost} count={closedLost.length} leads={closedLost} color={STAGE_COLORS.closed_lost} />
+                <PipelineColumn stage="nurture" title={STAGE_LABELS.nurture} count={nurture.length} leads={nurture} color={STAGE_COLORS.nurture} onDropLead={updateStage} />
+                <PipelineColumn stage="handed_off" title={STAGE_LABELS.handed_off} count={handedOff.length} leads={handedOff} color={STAGE_COLORS.handed_off} onDropLead={updateStage} />
+                <PipelineColumn stage="closed_won" title={STAGE_LABELS.closed_won} count={closedWon.length} leads={closedWon} color={STAGE_COLORS.closed_won} onDropLead={updateStage} />
+                <PipelineColumn stage="closed_lost" title={STAGE_LABELS.closed_lost} count={closedLost.length} leads={closedLost} color={STAGE_COLORS.closed_lost} onDropLead={updateStage} />
               </div>
             </div>
           </div>
@@ -204,14 +209,28 @@ export default function LeadPipeline({ initialLeads }: Props) {
   )
 }
 
-function PipelineColumn({ title, count, leads, color }: {
+function PipelineColumn({ stage, title, count, leads, color, onDropLead }: {
+  stage: string
   title: string
   count: number
   leads: Lead[]
   color: string
+  onDropLead: (leadId: string, newStage: string) => void
 }) {
+  const [dragOver, setDragOver] = useState(false)
+
   return (
-    <div className="bg-surface border border-border rounded-xl p-4">
+    <div
+      onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={e => {
+        e.preventDefault()
+        setDragOver(false)
+        const leadId = e.dataTransfer.getData('text/plain')
+        if (leadId) onDropLead(leadId, stage)
+      }}
+      className={`bg-surface border rounded-xl p-4 transition-colors ${dragOver ? 'border-text-primary/40 bg-input' : 'border-border'}`}
+    >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color }}>
           {title}

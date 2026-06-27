@@ -7,6 +7,10 @@ const SOURCE_COLORS: Record<string, string> = {
   telegram: '#3b82f6',
 }
 
+// Claude Sonnet pricing per million tokens — verify against Anthropic's current pricing page before using for real margin decisions
+const INPUT_COST_PER_MILLION = 3
+const OUTPUT_COST_PER_MILLION = 15
+
 export default async function AnalyticsPage() {
   const { data: leadsData } = await supabase.from('leads').select('*')
   const { data: messagesData } = await supabase.from('messages').select('*').order('created_at', { ascending: true })
@@ -72,6 +76,13 @@ export default async function AnalyticsPage() {
 
   const totalSourced = Object.values(sourceCounts).reduce((a, b) => a + b, 0) || 1
 
+  // AI cost per lead — derived from real Claude API token usage captured per conversation
+  const leadsWithTokens = leads.filter(l => (l.input_tokens || 0) > 0 || (l.output_tokens || 0) > 0)
+  const totalInputTokens = leadsWithTokens.reduce((sum, l) => sum + (l.input_tokens || 0), 0)
+  const totalOutputTokens = leadsWithTokens.reduce((sum, l) => sum + (l.output_tokens || 0), 0)
+  const totalCostUsd = (totalInputTokens / 1_000_000) * INPUT_COST_PER_MILLION + (totalOutputTokens / 1_000_000) * OUTPUT_COST_PER_MILLION
+  const avgCostPerLead = leadsWithTokens.length === 0 ? 0 : totalCostUsd / leadsWithTokens.length
+
   return (
     <div className="min-h-screen bg-page p-8">
       <h1 className="text-xl font-semibold text-text-primary mb-1">Analytics</h1>
@@ -134,6 +145,35 @@ export default async function AnalyticsPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* AI cost per lead */}
+      <div className="card-hover bg-surface border border-border rounded-xl p-6 mb-6">
+        <h3 className="text-sm font-semibold text-text-primary mb-0.5">AI cost per lead</h3>
+        <p className="text-xs text-text-tertiary mb-4">
+          Real Claude API token usage, measured per qualified conversation, against current pricing tiers.
+        </p>
+        <div className="flex items-end gap-8">
+          <div>
+            <p className="text-2xl font-semibold text-text-primary">
+              ${avgCostPerLead.toFixed(3)}
+            </p>
+            <p className="text-xs text-text-secondary mt-0.5">avg. cost per lead</p>
+          </div>
+          <div>
+            <p className="text-2xl font-semibold text-text-primary">{leadsWithTokens.length}</p>
+            <p className="text-xs text-text-secondary mt-0.5">leads measured</p>
+          </div>
+          <div>
+            <p className="text-2xl font-semibold text-text-primary">${totalCostUsd.toFixed(2)}</p>
+            <p className="text-xs text-text-secondary mt-0.5">total AI spend</p>
+          </div>
+        </div>
+        {leadsWithTokens.length === 0 && (
+          <p className="text-xs text-text-tertiary mt-3">
+            No measured conversations yet — this fills in as leads complete qualification after the latest update.
+          </p>
+        )}
       </div>
 
       {/* Stage distribution */}

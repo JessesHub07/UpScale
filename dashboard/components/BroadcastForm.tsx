@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Lead } from '@/lib/type'
 import { STAGES, STAGE_LABELS, STAGE_COLORS } from '@/lib/stages'
-import { Send, AlertTriangle, Search, Plus, Calendar, MessageCircle, Camera } from 'lucide-react'
+import { Send, AlertTriangle, Search, Plus, Calendar, MessageCircle, Camera, Check } from 'lucide-react'
 
 interface Props {
   leads: Lead[]
@@ -25,6 +25,7 @@ export default function BroadcastForm({ leads }: Props) {
   const [result, setResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
   const [showChannelPicker, setShowChannelPicker] = useState(false)
   const [scheduled, setScheduled] = useState(false)
+  const [deselected, setDeselected] = useState<Set<string>>(new Set())
 
   const stageCounts = useMemo(() => {
     return STAGES.reduce((acc, s) => {
@@ -43,6 +44,8 @@ export default function BroadcastForm({ leads }: Props) {
     )
   }, [leads, selectedStages, minScore, urgentOnly, search])
 
+  const selected = useMemo(() => matched.filter(l => !deselected.has(l.id)), [matched, deselected])
+
   function toggleStage(stage: string) {
     setSelectedStages(prev => {
       const next = new Set(prev)
@@ -52,10 +55,19 @@ export default function BroadcastForm({ leads }: Props) {
     })
   }
 
+  function toggleLead(id: string) {
+    setDeselected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   async function sendNow() {
     setSending(true)
     setResult(null)
-    const recipients = matched.map(l => ({ leadId: l.id, chatId: l.chat_id }))
+    const recipients = selected.map(l => ({ leadId: l.id, chatId: l.chat_id }))
     const res = await fetch('/api/broadcast', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -93,7 +105,7 @@ export default function BroadcastForm({ leads }: Props) {
     }
   }
 
-  const previewName = matched[0]?.name || 'your lead'
+  const previewName = selected[0]?.name || 'your lead'
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
@@ -105,7 +117,7 @@ export default function BroadcastForm({ leads }: Props) {
           <p className="text-xs text-text-tertiary mb-4">Pick which leads should receive this broadcast.</p>
 
           <p className="text-xs font-medium text-text-secondary mb-2">Send via</p>
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center gap-2 mb-5 flex-wrap">
             <button
               onClick={() => setChannel('telegram')}
               className={`flex flex-col items-start px-3 py-2 rounded-lg border text-left min-w-[110px] transition-colors ${
@@ -216,30 +228,62 @@ export default function BroadcastForm({ leads }: Props) {
             />
           </div>
 
-          <p className="text-xs font-medium text-text-secondary mb-2">Matched recipients · {matched.length}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-text-secondary">
+              Recipients · {selected.length} of {matched.length} selected
+            </p>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setDeselected(new Set())}
+                className="text-[11px] text-text-tertiary hover:text-text-primary transition-colors"
+              >
+                Select all
+              </button>
+              <span className="text-text-tertiary text-[11px]">·</span>
+              <button
+                onClick={() => setDeselected(new Set(matched.map(l => l.id)))}
+                className="text-[11px] text-text-tertiary hover:text-text-primary transition-colors"
+              >
+                Select none
+              </button>
+            </div>
+          </div>
           <div className="border border-border rounded-lg max-h-64 overflow-y-auto divide-y divide-border">
             {matched.length === 0 ? (
               <p className="text-xs text-text-tertiary text-center py-6">No leads match these filters.</p>
             ) : (
-              matched.map(l => (
-                <div key={l.id} className="flex items-center justify-between px-3 py-2.5">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-input flex items-center justify-center text-[11px] font-semibold text-text-secondary shrink-0">
-                      {(l.name || '?').charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm text-text-primary truncate">{l.name || 'Unknown'}</p>
-                      <p className="text-[11px] text-text-tertiary truncate">{l.location || '—'}</p>
-                    </div>
-                  </div>
-                  <span
-                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
-                    style={{ color: STAGE_COLORS[l.stage as keyof typeof STAGE_COLORS] || '#6b7280', backgroundColor: `${STAGE_COLORS[l.stage as keyof typeof STAGE_COLORS] || '#6b7280'}18` }}
+              matched.map(l => {
+                const isSelected = !deselected.has(l.id)
+                return (
+                  <button
+                    key={l.id}
+                    onClick={() => toggleLead(l.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${isSelected ? '' : 'opacity-40'} hover:bg-input`}
                   >
-                    {l.score ?? 0}
-                  </span>
-                </div>
-              ))
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className="w-4 h-4 rounded-md border flex items-center justify-center shrink-0"
+                        style={isSelected ? { backgroundColor: 'var(--text-primary)', borderColor: 'var(--text-primary)' } : { borderColor: 'var(--border-color)' }}
+                      >
+                        {isSelected && <Check size={11} className="text-page" />}
+                      </div>
+                      <div className="w-7 h-7 rounded-full bg-input flex items-center justify-center text-[11px] font-semibold text-text-secondary shrink-0">
+                        {(l.name || '?').charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm text-text-primary truncate">{l.name || 'Unknown'}</p>
+                        <p className="text-[11px] text-text-tertiary truncate">{l.location || '—'}</p>
+                      </div>
+                    </div>
+                    <span
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+                      style={{ color: STAGE_COLORS[l.stage as keyof typeof STAGE_COLORS] || '#6b7280', backgroundColor: `${STAGE_COLORS[l.stage as keyof typeof STAGE_COLORS] || '#6b7280'}18` }}
+                    >
+                      {l.score ?? 0}
+                    </span>
+                  </button>
+                )
+              })
             )}
           </div>
         </div>
@@ -292,10 +336,10 @@ export default function BroadcastForm({ leads }: Props) {
 
           <button
             onClick={() => setConfirming(true)}
-            disabled={!message.trim() || matched.length === 0 || (sendMode === 'later' && !sendAt)}
+            disabled={!message.trim() || (sendMode === 'now' ? selected.length === 0 : matched.length === 0) || (sendMode === 'later' && !sendAt)}
             className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg bg-text-primary text-page hover:opacity-90 transition-opacity disabled:opacity-40"
           >
-            <Send size={14} /> {sendMode === 'now' ? `Send to ${matched.length}` : 'Schedule Broadcast'}
+            <Send size={14} /> {sendMode === 'now' ? `Send to ${selected.length}` : 'Schedule Broadcast'}
           </button>
 
           {result && (
@@ -332,7 +376,7 @@ export default function BroadcastForm({ leads }: Props) {
             </div>
             <div className="flex justify-between">
               <span className="text-text-secondary">Recipients</span>
-              <span className="text-text-primary">{matched.length}</span>
+              <span className="text-text-primary">{sendMode === 'now' ? selected.length : matched.length}</span>
             </div>
           </div>
           {channel === 'whatsapp' && (
@@ -353,7 +397,7 @@ export default function BroadcastForm({ leads }: Props) {
               <AlertTriangle size={18} className="text-[#f59e0b] mt-0.5 shrink-0" />
               <div>
                 <h2 className="text-sm font-semibold text-text-primary mb-1">
-                  {sendMode === 'now' ? `Send to ${matched.length} leads?` : `Schedule for ${matched.length} leads?`}
+                  {sendMode === 'now' ? `Send to ${selected.length} leads?` : `Schedule for ${matched.length} leads?`}
                 </h2>
                 <p className="text-xs text-text-secondary leading-relaxed">
                   {sendMode === 'now' ? "This sends immediately and can't be recalled." : 'The audience is recalculated at send time, so the count may shift slightly.'}

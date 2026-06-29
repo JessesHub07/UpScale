@@ -15,7 +15,7 @@ export default async function BroadcastPage() {
   const templates = (templatesData ?? []) as Template[]
 
   return (
-    <div className="min-h-screen bg-page p-8">
+    <div className="min-h-screen bg-page p-4 sm:p-8">
       <h1 className="text-xl font-semibold text-text-primary mb-1">Broadcast</h1>
       <p className="text-sm text-text-secondary mb-6">
         Reach a segment of leads with a single message. Useful for reactivation, seasonal offers, or announcements.

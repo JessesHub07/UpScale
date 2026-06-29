@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutGrid, BarChart3, CalendarDays, Settings as SettingsIcon, Megaphone,
-  LogOut, ChevronUp, ChevronLeft, ChevronRight, Menu, X,
+  LogOut, ChevronUp, ChevronLeft, ChevronRight, Menu, X, Gauge,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -183,17 +183,27 @@ function SidebarContent({
         })}
       </nav>
 
-      {!collapsed && leadsThisMonth !== null && (
-        <div className="px-5 pb-2">
-          <div className="flex justify-between text-[10px] text-white/40 mb-1">
-            <span>{leadsThisMonth} / {MONTHLY_QUOTA} leads</span>
-            <span>{Math.round(usagePct)}%</span>
+      {!collapsed && leadsThisMonth !== null && (() => {
+        const barColor = usagePct >= 90 ? '#ef4444' : usagePct >= 70 ? '#f59e0b' : '#22c55e'
+        return (
+          <div className="px-5 pb-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Gauge size={12} style={{ color: barColor }} />
+              <span className="text-[10px] font-medium text-white/60">Monthly usage</span>
+            </div>
+            <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-1.5">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${Math.max(usagePct, 2)}%`, backgroundColor: barColor }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-white/35">
+              <span>{leadsThisMonth} / {MONTHLY_QUOTA} leads</span>
+              <span style={{ color: barColor }}>{Math.round(usagePct)}%</span>
+            </div>
           </div>
-          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-white/40 rounded-full" style={{ width: `${usagePct}%` }} />
-          </div>
-        </div>
-      )}
+        )
+      })()}
 
       <div ref={menuRef} className="relative border-t border-white/10">
         {menuOpen && (

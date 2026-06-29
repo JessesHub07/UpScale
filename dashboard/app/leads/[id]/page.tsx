@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import ThemeToggle from '@/components/ThemeToggle'
 import LeadControls from '@/components/LeadControls'
 import DeleteLeadButton from '@/components/DeleteLeadButton'
+import ConversationPanel from '@/components/ConversationPanel'
 import { Phone, Mail, MapPin, Home, Zap, Wallet, Calendar, UserCheck, ArrowLeft } from 'lucide-react'
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -89,7 +90,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           </div>
 
           {/* Stage + Notes */}
-          <LeadControls leadId={l.id} initialStage={l.stage} initialNotes={l.notes} />
+          <LeadControls leadId={l.id} chatId={l.chat_id} initialStage={l.stage} initialNotes={l.notes} />
 
           {/* Score Breakdown */}
           <div className="float-in bg-surface border border-border rounded-xl p-6" style={{ animationDelay: '80ms' }}>
@@ -121,59 +122,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         {/* RIGHT — Conversation Transcript */}
-        <div className="float-in bg-surface border border-border rounded-xl flex flex-col" style={{ minHeight: '600px', animationDelay: '120ms' }}>
-          <div className="px-5 py-3.5 border-b border-border flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-text-primary flex items-center justify-center shrink-0">
-              <span className="text-page font-semibold text-sm">H</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary">Helen (AI)</p>
-              <p className="text-xs text-text-tertiary capitalize">{l.source} · {transcript.length} Messages</p>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] pulse-dot" />
-              <span className="text-xs text-text-secondary">Active</span>
-            </div>
-          </div>
-          <div
-            className="chat-pattern flex-1 p-4 overflow-y-auto flex flex-col gap-2 rounded-b-xl"
-            style={{ backgroundColor: 'var(--chat-bg)' }}
-          >
-            {transcript.length === 0 ? (
-              <p className="text-xs text-text-tertiary text-center py-8">
-                No messages yet.
-              </p>
-            ) : (
-              transcript.map((m, i) => {
-                const isAssistant = m.role.trim() === 'assistant'
-                const prevIsAssistant = i > 0 ? transcript[i - 1].role.trim() === 'assistant' : null
-                const showLabel = isAssistant !== prevIsAssistant
-                return (
-                <div key={m.id} className={`flex flex-col ${isAssistant ? 'items-end' : 'items-start'}`}>
-                  {showLabel && (
-                    <span className="text-[10px] text-text-tertiary mb-0.5 px-1">
-                      {isAssistant ? 'Helen (AI)' : l.name || 'Customer'}
-                    </span>
-                  )}
-                  <div
-                    className={`max-w-[75%] rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm ${
-                      isAssistant ? 'rounded-tr-none' : 'rounded-tl-none'
-                    }`}
-                    style={{
-                      backgroundColor: isAssistant ? 'var(--bubble-sent-bg)' : 'var(--bubble-received-bg)',
-                      color: isAssistant ? 'var(--bubble-sent-text)' : 'var(--bubble-received-text)',
-                    }}
-                  >
-                    <p>{m.content}</p>
-                    <p className="text-[10px] mt-1 opacity-60 text-right">
-                      {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              )})
-            )}
-          </div>
-        </div>
+        <ConversationPanel lead={l} transcript={transcript} />
 
       </div>
     </div>

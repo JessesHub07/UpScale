@@ -1,19 +1,25 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { STAGES, STAGE_LABELS } from '@/lib/stages'
+import { Sparkles } from 'lucide-react'
 
 interface Props {
   leadId: string
+  chatId: string
   initialStage: string
   initialNotes: string | null
 }
 
-export default function LeadControls({ leadId, initialStage, initialNotes }: Props) {
+export default function LeadControls({ leadId, chatId, initialStage, initialNotes }: Props) {
+  const router = useRouter()
   const [stage, setStage] = useState(initialStage)
   const [notes, setNotes] = useState(initialNotes ?? '')
   const [saving, setSaving] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState('')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   async function updateStage(newStage: string) {
@@ -31,9 +37,41 @@ export default function LeadControls({ leadId, initialStage, initialNotes }: Pro
     }, 600)
   }
 
+  async function reanalyze() {
+    setAnalyzing(true)
+    setAnalyzeError('')
+    const res = await fetch('/api/analyze-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId, chatId }),
+    })
+    setAnalyzing(false)
+    if (res.ok) {
+      router.refresh()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setAnalyzeError(data.error || 'Re-analysis failed')
+    }
+  }
+
   return (
     <div className="float-in bg-surface border border-border rounded-xl p-6" style={{ animationDelay: '40ms' }}>
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-text-secondary mb-3">Stage &amp; Notes</h3>
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">Stage &amp; Notes</h3>
+        <button
+          onClick={reanalyze}
+          disabled={analyzing}
+          title="Re-reads the full conversation and recalculates score, stage, and summary"
+          className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border border-border text-text-secondary hover:text-text-primary hover:border-text-primary/30 transition-colors disabled:opacity-50"
+        >
+          <Sparkles size={12} />
+          {analyzing ? 'Analyzing…' : 'Re-analyze Conversation'}
+        </button>
+      </div>
+      <p className="text-[11px] text-text-tertiary mb-3">
+        Re-reads the full chat, including anything you typed yourself, and updates score, stage, and summary.
+      </p>
+      {analyzeError && <p className="text-xs text-[#ef4444] mb-3">{analyzeError}</p>}
 
       <div className="flex flex-wrap gap-2 mb-5">
         {STAGES.map(s => (

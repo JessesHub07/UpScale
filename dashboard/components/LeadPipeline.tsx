@@ -7,7 +7,7 @@ import LeadCard from './LeadCard'
 import LeadTable from './LeadTable'
 import ThemeToggle from './ThemeToggle'
 import StatsBar from './StatsBar'
-import { STAGE_COLORS, STAGE_LABELS } from '@/lib/stages'
+import { STAGE_COLORS, STAGE_LABELS, STAGES } from '@/lib/stages'
 import { Search, AlertTriangle, Download, UserPlus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import AddLeadModal from './AddLeadModal'
@@ -53,7 +53,12 @@ export default function LeadPipeline({ initialLeads }: Props) {
   const leads = useMemo(() => {
     if (!query.trim()) return allLeads
     const q = query.toLowerCase()
-    return allLeads.filter(l => (l.name || '').toLowerCase().includes(q))
+    const matchingStages = STAGES.filter(s =>
+      s.replace('_', ' ').includes(q) || STAGE_LABELS[s].toLowerCase().includes(q)
+    )
+    return allLeads.filter(l =>
+      (l.name || '').toLowerCase().includes(q) || matchingStages.includes(l.stage as typeof STAGES[number])
+    )
   }, [allLeads, query])
 
   const urgent = leads.filter(l => l.urgent)
@@ -109,7 +114,7 @@ export default function LeadPipeline({ initialLeads }: Props) {
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search leads"
+              placeholder="Search name or stage"
               className="bg-input border border-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary w-full lg:w-44 focus:outline-none focus:border-text-primary/30"
             />
           </div>

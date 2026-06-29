@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutGrid, BarChart3, CalendarDays, Settings as SettingsIcon,
+  LayoutGrid, BarChart3, CalendarDays, Settings as SettingsIcon, Megaphone,
   LogOut, ChevronUp, ChevronLeft, ChevronRight, Menu, X,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: 'Pipeline', href: '/', icon: LayoutGrid },
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
   { label: 'Calendar', href: '/calendar', icon: CalendarDays },
+  { label: 'Broadcast', href: '/broadcast', icon: Megaphone },
   { label: 'Settings', href: '/settings', icon: SettingsIcon },
 ]
 

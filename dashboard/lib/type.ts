@@ -19,6 +19,7 @@ export interface Lead {
   notes: string | null
   input_tokens: number | null
   output_tokens: number | null
+  ai_paused: boolean
   created_at: string
   updated_at: string | null
 }
@@ -30,5 +31,14 @@ export interface Message {
   role: 'user' | 'assistant'
   content: string
   channel: string
+  created_at: string
+}
+
+export interface Template {
+  id: string
+  name: string
+  category: 'marketing' | 'utility' | 'authentication'
+  content: string
+  status: 'draft' | 'pending' | 'approved' | 'rejected'
   created_at: string
 }

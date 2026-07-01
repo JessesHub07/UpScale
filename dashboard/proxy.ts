@@ -9,6 +9,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/api/login') ||
     pathname.startsWith('/get-quote') ||
+    pathname.startsWith('/home') ||
     pathname.startsWith('/api/web-lead') ||
     /\.(png|webp|jpg|jpeg|svg|ico|gif)$/i.test(pathname)
   ) {

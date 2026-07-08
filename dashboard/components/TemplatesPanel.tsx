@@ -118,7 +118,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
   const [statusFilter, setStatusFilter] = useState<Template['status'] | 'all'>('all')
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
-  const [name, setName] = useState('')
+  const [tplName, setTplName] = useState('')
   const [category, setCategory] = useState<Template['category']>('marketing')
   const [content, setContent] = useState('')
   const [saving, setSaving] = useState(false)
@@ -136,7 +136,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
 
   function openNew() {
     setEditingTemplate(null)
-    setName('')
+    setTplName('')
     setCategory('marketing')
     setContent('')
     setShowAI(false)
@@ -145,7 +145,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
 
   function openEdit(t: Template) {
     setEditingTemplate(t)
-    setName(t.name)
+    setTplName(t.name)
     setCategory(t.category)
     setContent(t.content)
     setShowAI(false)
@@ -174,12 +174,12 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
   }
 
   async function saveTemplate() {
-    if (!name.trim() || !content.trim()) return
+    if (!tplName.trim() || !content.trim()) return
     setSaving(true)
     if (editingTemplate) {
       const { data, error } = await supabase
         .from('templates')
-        .update({ name, category, content })
+        .update({ name: tplName, category, content })
         .eq('id', editingTemplate.id)
         .select().single()
       setSaving(false)
@@ -190,7 +190,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
     } else {
       const { data, error } = await supabase
         .from('templates')
-        .insert({ name, category, content, status: 'draft' })
+        .insert({ name: tplName, category, content, status: 'draft' })
         .select().single()
       setSaving(false)
       if (!error && data) {
@@ -372,12 +372,15 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
                   {/* Name + category */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-medium text-text-secondary block mb-1.5">Template name</label>
+                      <label className="text-xs font-medium text-text-secondary block mb-1.5">
+                        Template name <span className="text-[#ef4444]">*</span>
+                      </label>
                       <input
-                        value={name}
-                        onChange={e => setName(e.target.value)}
+                        value={tplName}
+                        onChange={e => setTplName(e.target.value)}
                         placeholder="e.g. Appointment Reminder"
-                        className="w-full bg-input border border-border rounded-xl px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-text-primary/30"
+                        className="w-full bg-input border rounded-xl px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+                        style={{ borderColor: tplName.trim() ? 'var(--border-color)' : 'rgba(239,68,68,0.4)' }}
                       />
                     </div>
                     <div>
@@ -397,7 +400,9 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
                   {/* AI generate */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-medium text-text-secondary">Message body</label>
+                      <label className="text-xs font-medium text-text-secondary">
+                        Message body <span className="text-[#ef4444]">*</span>
+                      </label>
                       <button
                         onClick={() => setShowAI(v => !v)}
                         className="flex items-center gap-1 text-xs font-medium text-[#22c55e] hover:opacity-80 transition-opacity"
@@ -503,7 +508,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
                         <div className="bg-[#202c33] px-4 py-2.5 flex items-center gap-3">
                           <div className="w-7 h-7 rounded-full bg-[#22c55e]/20 flex items-center justify-center text-[10px] text-[#22c55e] font-bold">A</div>
                           <div>
-                            <p className="text-[11px] font-semibold text-white leading-tight">{name || 'Template Preview'}</p>
+                            <p className="text-[11px] font-semibold text-white leading-tight">{tplName || 'Template Preview'}</p>
                             <p className="text-[9px] text-white/40">WhatsApp Business</p>
                           </div>
                         </div>
@@ -545,7 +550,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
                 </button>
                 <button
                   onClick={saveTemplate}
-                  disabled={saving || !name.trim() || !content.trim()}
+                  disabled={saving || !tplName.trim() || !content.trim()}
                   className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl bg-text-primary text-page hover:opacity-90 transition-opacity disabled:opacity-40"
                 >
                   {saving ? 'Saving…' : <><Check size={14} /> {editingTemplate ? 'Save changes' : 'Save draft'}</>}

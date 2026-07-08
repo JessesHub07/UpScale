@@ -124,7 +124,7 @@ export default function Sidebar() {
         />
         <button
           onClick={toggleCollapsed}
-          className="absolute top-5 -right-3.5 w-7 h-7 rounded-full bg-[#1a1a2e] border border-[#22c55e]/40 flex items-center justify-center text-white/70 hover:text-white hover:border-[#22c55e]/80 transition-colors z-20 shadow-md"
+          className="absolute top-5 -right-3.5 w-7 h-7 rounded-full bg-[#1a1a2e] border border-[#22c55e]/40 flex items-center justify-center text-white/70 hover:text-white hover:border-[#22c55e]/80 transition-colors z-30 shadow-md"
         >
           {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>

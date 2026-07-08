@@ -17,7 +17,18 @@ export default function ConversationPanel({ lead, transcript }: Props) {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [toggling, setToggling] = useState(false)
+  const [messages, setMessages] = useState<Message[]>(transcript)
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  async function deleteMessage(id: string) {
+    setMessages(prev => prev.filter(m => m.id !== id))
+    await fetch('/api/delete-message', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messageId: id }),
+    })
+  }
 
   useEffect(() => {
     if (paused) {
@@ -46,6 +57,7 @@ export default function ConversationPanel({ lead, transcript }: Props) {
     if (res.ok) {
       setMessage('')
       router.refresh()
+      setMessages(prev => [...prev])
     }
   }
 
@@ -80,33 +92,50 @@ export default function ConversationPanel({ lead, transcript }: Props) {
       </div>
 
       <div className="chat-pattern flex-1 p-4 overflow-y-auto flex flex-col gap-2" style={{ backgroundColor: 'var(--chat-bg)' }}>
-        {transcript.length === 0 ? (
+        {messages.length === 0 ? (
           <p className="text-xs text-text-tertiary text-center py-8">No messages yet.</p>
         ) : (
-          transcript.map((m, i) => {
+          messages.map((m, i) => {
             const isAssistant = m.role.trim() === 'assistant'
-            const prevIsAssistant = i > 0 ? transcript[i - 1].role.trim() === 'assistant' : null
+            const prevIsAssistant = i > 0 ? messages[i - 1].role.trim() === 'assistant' : null
             const showLabel = isAssistant !== prevIsAssistant
             return (
-              <div key={m.id} className={`flex flex-col ${isAssistant ? 'items-end' : 'items-start'}`}>
+              <div
+                key={m.id}
+                className={`flex flex-col ${isAssistant ? 'items-end' : 'items-start'}`}
+                onMouseEnter={() => setHoveredId(m.id)}
+                onMouseLeave={() => setHoveredId(null)}
+              >
                 {showLabel && (
                   <span className="text-[10px] text-text-tertiary mb-0.5 px-1">
                     {isAssistant ? 'Helen (AI)' : lead.name || 'Customer'}
                   </span>
                 )}
-                <div
-                  className={`max-w-[75%] rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm ${
-                    isAssistant ? 'rounded-tr-none' : 'rounded-tl-none'
-                  }`}
-                  style={{
-                    backgroundColor: isAssistant ? 'var(--bubble-sent-bg)' : 'var(--bubble-received-bg)',
-                    color: isAssistant ? 'var(--bubble-sent-text)' : 'var(--bubble-received-text)',
-                  }}
-                >
-                  <p>{m.content}</p>
-                  <p className="text-[10px] mt-1 opacity-60 text-right">
-                    {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                <div className={`flex items-end gap-1.5 ${isAssistant ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div
+                    className={`max-w-[75%] rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm ${
+                      isAssistant ? 'rounded-tr-none' : 'rounded-tl-none'
+                    }`}
+                    style={{
+                      backgroundColor: isAssistant ? 'var(--bubble-sent-bg)' : 'var(--bubble-received-bg)',
+                      color: isAssistant ? 'var(--bubble-sent-text)' : 'var(--bubble-received-text)',
+                    }}
+                  >
+                    <p>{m.content}</p>
+                    <p className="text-[10px] mt-1 opacity-60 text-right">
+                      {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  {hoveredId === m.id && (
+                    <button
+                      onClick={() => deleteMessage(m.id)}
+                      title="Delete message"
+                      className="text-text-tertiary hover:text-red-400 transition-colors shrink-0 mb-1"
+                      style={{ fontSize: 13 }}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
             )

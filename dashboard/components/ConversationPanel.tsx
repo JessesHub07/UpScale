@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Send } from 'lucide-react'
+import { Send, Maximize2, X } from 'lucide-react'
 import { Lead, Message } from '@/lib/type'
 
 interface Props {
@@ -19,6 +19,7 @@ export default function ConversationPanel({ lead, transcript }: Props) {
   const [toggling, setToggling] = useState(false)
   const [messages, setMessages] = useState<Message[]>(transcript)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [fullscreen, setFullscreen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function deleteMessage(id: string) {
@@ -61,37 +62,9 @@ export default function ConversationPanel({ lead, transcript }: Props) {
     }
   }
 
-  return (
-    <div className="float-in bg-surface border border-border rounded-xl flex flex-col" style={{ minHeight: '600px', animationDelay: '120ms' }}>
-      <div className="px-5 py-3.5 border-b border-border flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-text-primary flex items-center justify-center shrink-0">
-          <span className="text-page font-semibold text-sm">H</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-text-primary">Helen (AI)</p>
-          <p className="text-xs text-text-tertiary capitalize">{lead.source} · {transcript.length} Messages</p>
-        </div>
-        {!paused && (
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] pulse-dot" />
-            <span className="text-xs text-text-secondary">Active</span>
-          </div>
-        )}
-        <button
-          onClick={toggleTakeover}
-          disabled={toggling}
-          title={paused ? 'Hand the conversation back to Helen' : 'Pause Helen and message this lead yourself'}
-          className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors shrink-0 ${
-            paused
-              ? 'bg-[#f59e0b]/10 border-[#f59e0b]/40 text-[#f59e0b]'
-              : 'border-border text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          {paused ? 'AI Paused — Resume' : 'Take Over'}
-        </button>
-      </div>
-
-      <div className="chat-pattern flex-1 p-4 overflow-y-auto flex flex-col gap-2" style={{ backgroundColor: 'var(--chat-bg)' }}>
+  const chatBody = (isModal = false) => (
+    <>
+      <div className="chat-pattern flex-1 p-4 overflow-y-auto flex flex-col gap-2" style={{ backgroundColor: 'var(--chat-bg)', ...(isModal ? { maxHeight: 'calc(100vh - 180px)' } : {}) }}>
         {messages.length === 0 ? (
           <p className="text-xs text-text-tertiary text-center py-8">No messages yet.</p>
         ) : (
@@ -113,9 +86,7 @@ export default function ConversationPanel({ lead, transcript }: Props) {
                 )}
                 <div className={`flex items-end gap-1.5 ${isAssistant ? 'flex-row-reverse' : 'flex-row'}`}>
                   <div
-                    className={`max-w-[75%] rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm ${
-                      isAssistant ? 'rounded-tr-none' : 'rounded-tl-none'
-                    }`}
+                    className={`max-w-[75%] rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm ${isAssistant ? 'rounded-tr-none' : 'rounded-tl-none'}`}
                     style={{
                       backgroundColor: isAssistant ? 'var(--bubble-sent-bg)' : 'var(--bubble-received-bg)',
                       color: isAssistant ? 'var(--bubble-sent-text)' : 'var(--bubble-received-text)',
@@ -162,6 +133,76 @@ export default function ConversationPanel({ lead, transcript }: Props) {
           </button>
         </div>
       )}
+    </>
+  )
+
+  const header = (isModal = false) => (
+    <div className="px-5 py-3.5 border-b border-border flex items-center gap-3">
+      <div className="w-9 h-9 rounded-full bg-text-primary flex items-center justify-center shrink-0">
+        <span className="text-page font-semibold text-sm">H</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-text-primary">Helen (AI)</p>
+        <p className="text-xs text-text-tertiary capitalize">{lead.source} · {messages.length} Messages</p>
+      </div>
+      {!paused && (
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] pulse-dot" />
+          <span className="text-xs text-text-secondary">Active</span>
+        </div>
+      )}
+      <button
+        onClick={toggleTakeover}
+        disabled={toggling}
+        title={paused ? 'Hand the conversation back to Helen' : 'Pause Helen and message this lead yourself'}
+        className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors shrink-0 ${
+          paused
+            ? 'bg-[#f59e0b]/10 border-[#f59e0b]/40 text-[#f59e0b]'
+            : 'border-border text-text-secondary hover:text-text-primary'
+        }`}
+      >
+        {paused ? 'AI Paused — Resume' : 'Take Over'}
+      </button>
+      {!isModal ? (
+        <button
+          onClick={() => setFullscreen(true)}
+          title="Show conversation fullscreen"
+          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-border text-text-secondary hover:text-text-primary transition-colors shrink-0"
+        >
+          <Maximize2 size={12} />
+          <span>Show conversation</span>
+        </button>
+      ) : (
+        <button
+          onClick={() => setFullscreen(false)}
+          title="Close"
+          className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-text-secondary hover:text-text-primary transition-colors shrink-0"
+        >
+          <X size={14} />
+        </button>
+      )}
     </div>
+  )
+
+  return (
+    <>
+      <div className="float-in bg-surface border border-border rounded-xl flex flex-col" style={{ minHeight: '600px', animationDelay: '120ms' }}>
+        {header(false)}
+        {chatBody(false)}
+      </div>
+
+      {fullscreen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setFullscreen(false)}>
+          <div
+            className="bg-surface border border-border rounded-xl flex flex-col w-full max-w-2xl shadow-2xl"
+            style={{ height: '85vh' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {header(true)}
+            {chatBody(true)}
+          </div>
+        </div>
+      )}
+    </>
   )
 }

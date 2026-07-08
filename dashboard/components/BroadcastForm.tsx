@@ -194,16 +194,24 @@ export default function BroadcastForm({ leads }: Props) {
               <p className="text-xs font-medium text-text-secondary mb-2">
                 Minimum score: <span className="text-text-primary">{minScore}</span>
               </p>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={minScore}
-                onChange={e => setMinScore(Number(e.target.value))}
-                className="w-full accent-current"
-              />
-              <p className="text-[10px] text-text-tertiary mt-1">Only leads scoring this or higher are included.</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setMinScore(v => Math.max(0, v - 5))}
+                  disabled={minScore === 0}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-text-secondary hover:text-text-primary hover:border-text-primary/30 transition-colors disabled:opacity-30"
+                >
+                  ‹
+                </button>
+                <span className="flex-1 text-center text-sm font-semibold text-text-primary tabular-nums">{minScore}</span>
+                <button
+                  onClick={() => setMinScore(v => Math.min(100, v + 5))}
+                  disabled={minScore === 100}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-text-secondary hover:text-text-primary hover:border-text-primary/30 transition-colors disabled:opacity-30"
+                >
+                  ›
+                </button>
+              </div>
+              <p className="text-[10px] text-text-tertiary mt-2">Only leads scoring this or higher are included.</p>
             </div>
             <div>
               <p className="text-xs font-medium text-text-secondary mb-2">Only urgent leads</p>

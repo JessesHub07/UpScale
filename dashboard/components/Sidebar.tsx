@@ -172,11 +172,14 @@ function SidebarContent({
               key={item.href}
               href={item.href}
               title={collapsed ? item.label : undefined}
-              className={`flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg transition-colors ${
+              className={`relative flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg transition-colors overflow-hidden ${
                 collapsed ? 'w-10 justify-center' : 'w-full'
-              } ${active ? 'bg-white/12 text-white' : 'text-white/55 hover:text-white hover:bg-white/5'}`}
+              } ${active ? 'bg-white/10 text-white' : 'text-white/55 hover:text-white hover:bg-white/5'}`}
             >
-              <Icon size={15} strokeWidth={2} />
+              {active && (
+                <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[#22c55e]" />
+              )}
+              <Icon size={15} strokeWidth={active ? 2.5 : 2} />
               {!collapsed && item.label}
             </Link>
           )

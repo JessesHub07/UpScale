@@ -6,29 +6,61 @@ interface Props {
 
 export default function StatsBar({ leads }: Props) {
   const total = leads.length
-  const avgScore = total === 0 ? 0 : Math.round(leads.reduce((sum, l) => sum + (l.score || 0), 0) / total)
+  const salesReady = leads.filter(l => l.urgent || l.stage === 'hot').length
+  const highestScore = total === 0 ? 0 : Math.max(...leads.map(l => l.score || 0))
   const closedWon = leads.filter(l => l.stage === 'closed_won').length
-  const handedOff = leads.filter(l => l.stage === 'handed_off' || l.stage === 'closed_won' || l.stage === 'closed_lost').length
-  const conversionRate = total === 0 ? 0 : Math.round((closedWon / total) * 100)
-
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const todayCount = leads.filter(l => new Date(l.created_at) >= today).length
 
   const stats = [
-    { label: 'Total leads', value: total, caption: `${todayCount} today` },
-    { label: 'Conversion rate', value: `${conversionRate}%`, caption: `${closedWon} closed won` },
-    { label: 'Avg. lead score', value: avgScore, caption: 'out of 100' },
-    { label: 'Handed off', value: handedOff, caption: 'to sales team' },
+    {
+      label: 'Sales ready',
+      value: salesReady,
+      caption: salesReady > 0 ? 'Respond now' : 'None yet today',
+      accent: salesReady > 0,
+    },
+    {
+      label: 'New today',
+      value: todayCount,
+      caption: `${total} total leads`,
+      accent: false,
+    },
+    {
+      label: 'Highest score',
+      value: highestScore,
+      caption: 'out of 100',
+      accent: false,
+    },
+    {
+      label: 'Closed won',
+      value: closedWon,
+      caption: closedWon === 0 ? 'Keep qualifying' : `of ${total} leads`,
+      accent: false,
+    },
   ]
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       {stats.map(s => (
-        <div key={s.label} className="card-hover bg-surface border border-border rounded-xl p-4">
+        <div
+          key={s.label}
+          className="card-hover bg-surface border rounded-xl p-4"
+          style={{ borderColor: s.accent ? 'rgba(34,197,94,0.35)' : 'var(--border-color)' }}
+        >
           <p className="text-xs text-text-secondary mb-1.5">{s.label}</p>
-          <p className="text-2xl font-semibold text-text-primary">{s.value}</p>
-          <p className="text-[11px] text-text-tertiary mt-1">{s.caption}</p>
+          <p
+            className="text-2xl font-semibold"
+            style={{ color: s.accent ? '#22c55e' : 'var(--text-primary)' }}
+          >
+            {s.value}
+          </p>
+          <p
+            className="text-[11px] mt-1 font-medium"
+            style={{ color: s.accent ? '#22c55e' : 'var(--text-tertiary)' }}
+          >
+            {s.caption}
+          </p>
         </div>
       ))}
     </div>

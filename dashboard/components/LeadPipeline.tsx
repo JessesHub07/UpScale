@@ -99,26 +99,48 @@ export default function LeadPipeline({ initialLeads }: Props) {
   return (
     <div className="min-h-screen bg-page">
       {/* Header */}
-      <header className="border-b border-border px-4 sm:px-8 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-0.5">Atmax Green Planet</p>
-          <h2 className="text-xl font-semibold tracking-tight text-text-primary">Pipeline</h2>
-          <p className="text-xs text-text-secondary mt-0.5">
-            {allLeads.length} leads · {hot.length} hot · {warm.length} warm
-            {urgent.length > 0 && <span className="text-[#ef4444] font-medium"> · {urgent.length} need attention</span>}
-          </p>
+      <header className="border-b border-border px-4 sm:px-8 py-3 bg-page sticky top-0 z-20">
+        {/* Title row */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Atmax Green Planet</p>
+            <h2 className="text-lg font-semibold tracking-tight text-text-primary leading-tight">Pipeline</h2>
+            <p className="text-[11px] text-text-secondary">
+              {allLeads.length} leads · {hot.length} hot · {warm.length} warm
+              {urgent.length > 0 && <span className="text-[#ef4444] font-medium"> · {urgent.length} urgent</span>}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <ThemeToggle />
+            <button
+              onClick={exportCsv}
+              title="Export CSV"
+              className="flex items-center justify-center w-8 h-8 rounded-lg border border-border text-text-secondary hover:text-text-primary hover:border-text-primary/30 transition-colors"
+            >
+              <Download size={14} />
+            </button>
+            <button
+              onClick={() => setShowAddLead(true)}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-text-primary text-page hover:opacity-90 transition-opacity"
+            >
+              <UserPlus size={13} />
+              <span className="hidden sm:inline">Add Lead</span>
+              <span className="sm:hidden">Add</span>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[140px]">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+        {/* Search + view toggle row */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search name or stage"
-              className="bg-input border border-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary w-full lg:w-44 focus:outline-none focus:border-text-primary/30"
+              className="bg-input border border-border rounded-lg pl-8 pr-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary w-full focus:outline-none focus:border-text-primary/30"
             />
           </div>
-          <div className="flex items-center gap-1 bg-input border border-border rounded-full p-0.5">
+          <div className="flex items-center gap-0.5 bg-input border border-border rounded-full p-0.5 shrink-0">
             <button
               onClick={() => setView('kanban')}
               className={`text-xs font-medium px-3 py-1 rounded-full transition-colors ${
@@ -136,19 +158,6 @@ export default function LeadPipeline({ initialLeads }: Props) {
               Table
             </button>
           </div>
-          <button
-            onClick={exportCsv}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-text-secondary hover:text-text-primary hover:border-text-primary/30 transition-colors"
-          >
-            <Download size={13} /> Export
-          </button>
-          <button
-            onClick={() => setShowAddLead(true)}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-text-primary text-page hover:opacity-90 transition-opacity"
-          >
-            <UserPlus size={13} /> Add Lead
-          </button>
-          <ThemeToggle />
         </div>
       </header>
 

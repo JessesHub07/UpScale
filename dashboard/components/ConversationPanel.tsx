@@ -56,9 +56,17 @@ export default function ConversationPanel({ lead, transcript }: Props) {
     })
     setSending(false)
     if (res.ok) {
+      setMessages(prev => [...prev, {
+        id: crypto.randomUUID(),
+        lead_id: lead.id,
+        chat_id: lead.chat_id,
+        role: 'assistant',
+        content: message,
+        channel: lead.source,
+        created_at: new Date().toISOString(),
+      }])
       setMessage('')
       router.refresh()
-      setMessages(prev => [...prev])
     }
   }
 

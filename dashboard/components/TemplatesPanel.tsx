@@ -127,6 +127,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [improving, setImproving] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const filtered = useMemo(() => templates.filter(t =>
@@ -176,6 +177,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
   async function saveTemplate() {
     if (!tplName.trim() || !content.trim()) return
     setSaving(true)
+    setSaveError(null)
     if (editingTemplate) {
       const { data, error } = await supabase
         .from('templates')
@@ -183,7 +185,8 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
         .eq('id', editingTemplate.id)
         .select().single()
       setSaving(false)
-      if (!error && data) {
+      if (error) { setSaveError(error.message); return }
+      if (data) {
         setTemplates(prev => prev.map(t => t.id === editingTemplate.id ? data as Template : t))
         setEditorOpen(false)
       }
@@ -193,7 +196,8 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
         .insert({ name: tplName, category, content, status: 'draft' })
         .select().single()
       setSaving(false)
-      if (!error && data) {
+      if (error) { setSaveError(error.message); return }
+      if (data) {
         setTemplates(prev => [data as Template, ...prev])
         setEditorOpen(false)
       }
@@ -250,7 +254,7 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
         <div>
           <h2 className="text-xl font-semibold text-text-primary mb-1">Templates</h2>
           <p className="text-sm text-text-secondary max-w-lg">
-            Create reusable WhatsApp templates for reminders, promotions, follow-ups, appointment confirmations, and more.
+            Create reusable templates for reminders, promotions, follow-ups, appointment confirmations, and more.
           </p>
         </div>
         <button
@@ -539,7 +543,9 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
             {/* Editor footer */}
             <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-3 shrink-0 bg-page">
               <p className="text-[11px] text-text-tertiary">
-                {editingTemplate ? 'Changes saved as draft until submitted to Meta.' : 'Saved as draft. Submit to Meta once WhatsApp is connected.'}
+                {saveError
+                  ? <span className="text-[#ef4444]">Error: {saveError}</span>
+                  : editingTemplate ? 'Changes saved as draft.' : 'Saved as draft.'}
               </p>
               <div className="flex gap-2">
                 <button

@@ -206,15 +206,10 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
 
   async function generateWithAI() {
     setAiLoading(true)
-    const res = await fetch('/api/generate-broadcast', {
+    const res = await fetch('/api/generate-template', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        announcement: aiPrompt,
-        tone: 'friendly',
-        cta: '',
-        audience: `${category} template for WhatsApp Business. Use {{1}}, {{2}}, {{3}} as numbered placeholders.`,
-      }),
+      body: JSON.stringify({ description: aiPrompt, category }),
     })
     setAiLoading(false)
     if (res.ok) {
@@ -224,18 +219,13 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
     }
   }
 
-  async function improveWith(instruction: string) {
+  async function improveWith(action: string) {
     if (!content.trim()) return
-    setImproving(instruction)
-    const res = await fetch('/api/generate-broadcast', {
+    setImproving(action)
+    const res = await fetch('/api/generate-template', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        announcement: `Rewrite the following WhatsApp template message. Instruction: ${instruction}.\n\nOriginal:\n${content}`,
-        tone: 'friendly',
-        cta: '',
-        audience: 'Keep numbered placeholders {{1}} {{2}} {{3}} where they appear.',
-      }),
+      body: JSON.stringify({ action, content }),
     })
     setImproving(null)
     if (res.ok) {
@@ -479,20 +469,20 @@ export default function TemplatesPanel({ initialTemplates }: Props) {
                     <div>
                       <p className="text-xs font-medium text-text-secondary mb-2">✨ Improve with AI</p>
                       <div className="flex flex-wrap gap-2">
-                        {[
-                          'Make more conversational',
-                          'Increase reply rate',
-                          'Shorten message',
-                          'Rewrite professionally',
-                        ].map(suggestion => (
+                        {([
+                          { action: 'conversational', label: 'Make more conversational' },
+                          { action: 'reply_rate', label: 'Increase reply rate' },
+                          { action: 'shorten', label: 'Shorten message' },
+                          { action: 'professional', label: 'Rewrite professionally' },
+                        ]).map(({ action, label }) => (
                           <button
-                            key={suggestion}
-                            onClick={() => improveWith(suggestion)}
+                            key={action}
+                            onClick={() => improveWith(action)}
                             disabled={!!improving}
                             className="text-xs px-3 py-1.5 rounded-lg border border-border text-text-secondary hover:text-text-primary hover:border-text-primary/30 transition-colors disabled:opacity-40 flex items-center gap-1"
                           >
-                            {improving === suggestion ? <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" /> : null}
-                            {suggestion}
+                            {improving === action ? <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" /> : null}
+                            {label}
                           </button>
                         ))}
                       </div>

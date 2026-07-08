@@ -103,8 +103,8 @@ export default function LeadPipeline({ initialLeads }: Props) {
         {/* Title row */}
         <div className="flex items-center justify-between gap-3 mb-3">
           <div>
-            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Atmax Green Planet</p>
-            <h2 className="text-lg font-semibold tracking-tight text-text-primary leading-tight">Pipeline</h2>
+            <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Atmax Green Planet</p>
+            <h2 className="text-xl font-bold tracking-tight text-text-primary leading-tight">Pipeline</h2>
             <p className="text-[11px] text-text-secondary">
               {allLeads.length} leads · {hot.length} hot · {warm.length} warm
               {urgent.length > 0 && <span className="text-[#ef4444] font-medium"> · {urgent.length} urgent</span>}

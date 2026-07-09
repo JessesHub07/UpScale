@@ -12,7 +12,7 @@ interface Props {
 type Channel = 'telegram' | 'whatsapp'
 type Tone = 'friendly' | 'professional' | 'urgent'
 
-const VARIABLES = ['{{first_name}}', '{{location}}', '{{budget}}']
+const VARIABLES = ['{{location}}', '{{budget}}']
 
 export default function BroadcastForm({ leads }: Props) {
   const [channel, setChannel] = useState<Channel>('telegram')
@@ -411,25 +411,45 @@ export default function BroadcastForm({ leads }: Props) {
                     />
                   </div>
                 </div>
-                <button
-                  onClick={generateWithAI}
-                  disabled={!aiAnnouncement.trim() || aiLoading}
-                  className="self-start flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-lg bg-[#22c55e] text-black hover:opacity-90 transition-opacity disabled:opacity-40"
-                >
-                  <Sparkles size={12} /> {aiLoading ? 'Generating…' : 'Generate'}
-                </button>
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    onClick={generateWithAI}
+                    disabled={!aiAnnouncement.trim() || aiLoading}
+                    className="flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-lg bg-[#22c55e] text-black hover:opacity-90 transition-opacity disabled:opacity-40"
+                  >
+                    <Sparkles size={12} /> {aiLoading ? 'Generating…' : 'Generate'}
+                  </button>
+                  <button
+                    onClick={() => setConfirming(true)}
+                    disabled={!message.trim() || (sendMode === 'now' ? selected.length === 0 : matched.length === 0) || (sendMode === 'later' && !sendAt)}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-text-primary text-page hover:opacity-90 transition-opacity disabled:opacity-30"
+                  >
+                    <Send size={11} />
+                    {sendMode === 'now' ? `Send${selected.length > 0 ? ` to ${selected.length}` : ''}` : 'Schedule'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          <textarea
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            placeholder="Write your message… or use Generate with AI above"
-            rows={5}
-            maxLength={1024}
-            className="w-full bg-input border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary resize-none focus:outline-none focus:border-text-primary/30 mb-2"
-          />
+          <div className="relative mb-2">
+            <textarea
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              placeholder="Write your message… or use Generate with AI above"
+              rows={5}
+              maxLength={1024}
+              className="w-full bg-input border border-border rounded-xl px-4 py-3 pb-10 text-sm text-text-primary placeholder:text-text-tertiary resize-none focus:outline-none focus:border-text-primary/30"
+            />
+            <button
+              onClick={() => setConfirming(true)}
+              disabled={!message.trim() || (sendMode === 'now' ? selected.length === 0 : matched.length === 0) || (sendMode === 'later' && !sendAt)}
+              className="absolute bottom-3 right-3 flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-text-primary text-page hover:opacity-90 transition-opacity disabled:opacity-30"
+            >
+              <Send size={11} />
+              {sendMode === 'now' ? `Send${selected.length > 0 ? ` to ${selected.length}` : ''}` : 'Schedule'}
+            </button>
+          </div>
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 flex-wrap">

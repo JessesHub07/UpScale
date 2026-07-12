@@ -145,50 +145,51 @@ export default function ConversationPanel({ lead, transcript }: Props) {
   )
 
   const header = (isModal = false) => (
-    <div className="px-5 py-3.5 border-b border-border flex items-center gap-3">
-      <div className="w-9 h-9 rounded-full bg-text-primary flex items-center justify-center shrink-0">
+    <div className="px-4 py-3 border-b border-border flex items-center gap-2 flex-wrap">
+      <div className="w-8 h-8 rounded-full bg-text-primary flex items-center justify-center shrink-0">
         <span className="text-page font-semibold text-sm">H</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-text-primary">Helen (AI)</p>
-        <p className="text-xs text-text-tertiary capitalize">{lead.source} · {messages.length} Messages</p>
+        <p className="text-sm font-semibold text-text-primary leading-tight">Helen (AI)</p>
+        <p className="text-[11px] text-text-tertiary capitalize leading-tight">{lead.source} · {messages.length} msgs</p>
       </div>
-      {!paused && (
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] pulse-dot" />
-          <span className="text-xs text-text-secondary">Active</span>
-        </div>
-      )}
-      <button
-        onClick={toggleTakeover}
-        disabled={toggling}
-        title={paused ? 'Hand the conversation back to Helen' : 'Pause Helen and message this lead yourself'}
-        className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors shrink-0 ${
-          paused
-            ? 'bg-[#f59e0b]/10 border-[#f59e0b]/40 text-[#f59e0b]'
-            : 'border-border text-text-secondary hover:text-text-primary'
-        }`}
-      >
-        {paused ? 'AI Paused — Resume' : 'Take Over'}
-      </button>
-      {!isModal ? (
+      <div className="flex items-center gap-1.5 shrink-0">
+        {!paused && (
+          <>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] pulse-dot" />
+            <span className="text-xs text-text-secondary hidden sm:inline">Active</span>
+          </>
+        )}
         <button
-          onClick={() => setFullscreen(true)}
-          title="Show conversation fullscreen"
-          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-border text-text-secondary hover:text-text-primary transition-colors shrink-0"
+          onClick={toggleTakeover}
+          disabled={toggling}
+          title={paused ? 'Hand the conversation back to Helen' : 'Pause Helen and message this lead yourself'}
+          className={`text-xs font-medium px-2.5 py-1.5 rounded-full border transition-colors shrink-0 ${
+            paused
+              ? 'bg-[#f59e0b]/10 border-[#f59e0b]/40 text-[#f59e0b]'
+              : 'border-border text-text-secondary hover:text-text-primary'
+          }`}
         >
-          <Maximize2 size={12} />
-          <span>Show conversation</span>
+          {paused ? 'Resume AI' : 'Take Over'}
         </button>
-      ) : (
-        <button
-          onClick={() => setFullscreen(false)}
-          title="Close"
-          className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-text-secondary hover:text-text-primary transition-colors shrink-0"
-        >
-          <X size={14} />
-        </button>
-      )}
+        {!isModal ? (
+          <button
+            onClick={() => setFullscreen(true)}
+            title="Show conversation fullscreen"
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-text-secondary hover:text-text-primary transition-colors shrink-0"
+          >
+            <Maximize2 size={13} />
+          </button>
+        ) : (
+          <button
+            onClick={() => setFullscreen(false)}
+            title="Close"
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-text-secondary hover:text-text-primary transition-colors shrink-0"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
     </div>
   )
 

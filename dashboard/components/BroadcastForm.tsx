@@ -506,7 +506,7 @@ export default function BroadcastForm({ leads }: Props) {
       </div>
 
       {/* RIGHT — Campaign summary + preview */}
-      <div className="flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start">
+      <div className="flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start order-first lg:order-last">
 
         {/* Campaign summary */}
         <div className="bg-surface border border-border rounded-xl p-5">

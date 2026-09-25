@@ -14,9 +14,10 @@ import AddLeadModal from './AddLeadModal'
 
 interface Props {
   initialLeads: Lead[]
+  fetchError?: string
 }
 
-export default function LeadPipeline({ initialLeads }: Props) {
+export default function LeadPipeline({ initialLeads, fetchError }: Props) {
   const router = useRouter()
   const [allLeads, setAllLeads] = useState<Lead[]>(initialLeads)
   const [view, setView] = useState<'kanban' | 'table'>('kanban')
@@ -165,6 +166,13 @@ export default function LeadPipeline({ initialLeads }: Props) {
 
       {/* Pipeline */}
       <div className="p-4 sm:p-8">
+        {fetchError && (
+          <div className="mb-4 p-4 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded-xl flex items-center gap-3 text-sm text-[#ef4444]">
+            <AlertTriangle size={16} className="shrink-0" />
+            <span>Could not load leads — database may be unavailable. Check your Supabase project status.</span>
+          </div>
+        )}
+
         <StatsBar leads={allLeads} />
 
         {/* Urgent Banner */}

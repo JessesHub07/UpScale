@@ -9,12 +9,11 @@ export default async function Home() {
 
   if (error) {
     console.error('Error fetching leads:', error)
-    return <div>Error loading leads</div>
   }
 
   return (
     <main className="min-h-screen bg-gray-950 text-white">
-      <LeadPipeline initialLeads={leads || []} />
+      <LeadPipeline initialLeads={leads || []} fetchError={error?.message} />
     </main>
   )
 }
